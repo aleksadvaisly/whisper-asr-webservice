@@ -3,12 +3,13 @@ import os
 from os import path
 from typing import Annotated, Optional, Union
 from urllib.parse import quote
+import io
 
 import click
 import uvicorn
 from fastapi import FastAPI, File, Query, UploadFile, applications
 from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.responses import RedirectResponse, StreamingResponse, PlainTextResponse
+from fastapi.responses import RedirectResponse, StreamingResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from whisper import tokenizer
 
@@ -98,8 +99,21 @@ async def asr(
         {"diarize": diarize, "min_speakers": min_speakers, "max_speakers": max_speakers},
         output,
     )
-    return PlainTextResponse(
-        result.getvalue(),
+
+    buffer = io.BytesIO()
+
+    # Zapisujemy dane ze streama do bufora
+    async for chunk in result:
+        buffer.write(chunk)
+
+    # Przesuwamy wskaźnik na początek, aby można było odczytać zawartość
+    buffer.seek(0)
+
+    # Pobieramy zawartość bufora
+    content = buffer.getvalue()
+
+    return Response(
+        content,
         media_type="text/plain",
         headers={
             "Asr-Engine": CONFIG.ASR_ENGINE,
