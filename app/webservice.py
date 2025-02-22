@@ -89,7 +89,7 @@ async def asr(
     ),
     output: Union[str, None] = Query(default="txt", enum=["txt", "vtt", "srt", "tsv", "json"]),
 ):
-    result = asr_model.transcribe(
+    result = await asr_model.transcribe(
         load_audio(audio_file.file, encode),
         task,
         language,
