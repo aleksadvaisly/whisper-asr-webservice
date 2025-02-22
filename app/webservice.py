@@ -8,7 +8,7 @@ import click
 import uvicorn
 from fastapi import FastAPI, File, Query, UploadFile, applications
 from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.responses import RedirectResponse, StreamingResponse
+from fastapi.responses import RedirectResponse, StreamingResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from whisper import tokenizer
 
@@ -52,7 +52,7 @@ async def index():
     return "/docs"
 
 
-@app.post("/asr", tags=["Endpoints"])
+@app.post("/asr", tags=["Endpoints"], response_class=PlainTextResponse)
 async def asr(
     audio_file: UploadFile = File(...),  # noqa: B008
     encode: bool = Query(default=True, description="Encode audio first through ffmpeg"),
@@ -98,8 +98,8 @@ async def asr(
         {"diarize": diarize, "min_speakers": min_speakers, "max_speakers": max_speakers},
         output,
     )
-    return StreamingResponse(
-        result,
+    return PlainTextResponse(
+        result.getvalue(),
         media_type="text/plain",
         headers={
             "Asr-Engine": CONFIG.ASR_ENGINE,
