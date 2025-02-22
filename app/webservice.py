@@ -53,7 +53,7 @@ async def index():
     return "/docs"
 
 
-@app.post("/asr", tags=["Endpoints"], response_class=PlainTextResponse)
+@app.post("/asr", tags=["Endpoints"])
 async def asr(
     audio_file: UploadFile = File(...),  # noqa: B008
     encode: bool = Query(default=True, description="Encode audio first through ffmpeg"),
@@ -100,20 +100,20 @@ async def asr(
         output,
     )
 
-    buffer = io.BytesIO()
+    # buffer = io.BytesIO()
 
-    # Zapisujemy dane ze streama do bufora
-    async for chunk in result:
-        buffer.write(chunk)
+    # # Zapisujemy dane ze streama do bufora
+    # async for chunk in result:
+    #     buffer.write(chunk)
 
-    # Przesuwamy wskaźnik na początek, aby można było odczytać zawartość
-    buffer.seek(0)
+    # # Przesuwamy wskaźnik na początek, aby można było odczytać zawartość
+    # buffer.seek(0)
 
     # Pobieramy zawartość bufora
-    content = buffer.getvalue()
+    content = result.getvalue()
 
     return Response(
-        content,
+        "Something is wrong scully " + content,
         media_type="text/plain",
         headers={
             "Asr-Engine": CONFIG.ASR_ENGINE,
